@@ -1,0 +1,220 @@
+---
+title: "Insert title here"
+subtitle: "BCon 147: special topics"
+author: "Insert your name here"
+date: last-modified
+format: 
+  html:
+    css: custom.scss
+    self-contained: true
+    mainfont: arial
+    fontsize: 1em
+    linestretch: 1.5
+    toc: true
+    toc-location: left
+    number-sections: true
+    code-fold: false
+    theme:
+      light: cosmo
+      dark: darkly
+execute:
+  message: false
+  warning: false
+  fig-align: center
+editor: visual
+---
+
+```{r}
+#| label: setup
+#| include: false
+#| echo: false
+
+# load your libraries here
+library(tidyverse)
+library(readxl)
+library(janitor)
+library(tidytext)
+
+# additional options
+## increase max print
+getOption("max.print")
+
+```
+
+## Project overiew
+
+In this project, we will explore employee attrition and performance using the HR Analytics Employee Attrition & Performance dataset. The primary goal is to develop insights into the factors that contribute to employee attrition. By analyzing a range of factors, including demographic data, job satisfaction, work-life balance, and job role, we aim to help businesses identify key areas where they can improve employee retention.
+
+
+## Scenario
+
+Imagine you are working as a data analyst for a mid-sized company that is experiencing high employee turnover, especially among high-performing employees. The company has been facing increased costs related to hiring and training new employees, and management is concerned about the negative impact on productivity and morale. The human resources (HR) team has collected historical employee data and now looks to you for actionable insights. They want to understand why employees are leaving and how to retain talent effectively.
+
+Your task is to analyze the dataset and provide insights that will help HR prioritize retention strategies. These strategies could include interventions like revising compensation policies, improving job satisfaction, or focusing on work-life balance initiatives. The success of your analysis could lead to significant cost savings for the company and an increase in employee engagement and performance.
+
+
+## Understanding the source of data
+
+The dataset used for this project provides information about employee demographics, performance metrics, and various satisfaction ratings. The dataset is particularly useful for exploring how factors such as job satisfaction, work-life balance, and training opportunities influence employee performance and attrition.
+
+This dataset is well-suited for conducting in-depth analysis of employee performance and retention, enabling us to build predictive models that identify the key drivers of employee attrition. Additionally, we can assess the impact of various organizational factors, such as training and work-life balance, on both performance and retention outcomes.
+
+```{r}
+#| label: variable descriptions
+
+## datatable function from DT package create an HTML widget display of the dataset
+## install DT package if the package is not yet available in your R environment
+read_excel("dataset/dataset-variable-description.xlsx") |> 
+  DT::datatable()
+```
+
+
+
+
+## Data wrangling
+
+### Data importation
+
+
+::: {.callout-tip}
+## Task 4.1. Merging dataset
+
+- Import the two dataset `Employee.csv` and `PerformanceRating.csv`. Save the `Employee.csv` as `employee_dta` and `PerformanceRating.csv` as `perf_rating_dta`.
+
+- Merge the two dataset using the `left_join` function from `dplyr`. Use the `EmployeeID` variable as the varible to join by.
+
+- Save the merged dataset as `hr_perf_dta`.
+:::
+
+```{r}
+
+## import the two dataset
+employee_dta <- read_csv("dataset/Employee.csv")
+perf_rating_dta <- read_csv("dataset/PerformanceRating.csv")
+
+## merge employee_dta and perf_rating_dta
+hr_perf_dta <- 
+  employee_dta |> 
+  left_join(perf_rating_dta, by = "EmployeeID")
+
+
+## Use the datatable from DT package to display the merged dataset
+DT::datatable(hr_perf_dta)
+
+```
+
+
+
+
+### Data management
+
+::: {.callout-tip}
+## Task 4.2. Standardizing variable names
+
+- Using the `clean_names` function from `janitor` package, standardize the variable names by using the recommended naming of variables. 
+
+- Save the renamed variables as `hr_perf_dta` to update the dataset.
+:::
+
+
+```{r}
+
+## clean names using the janitor packages and save as hr_perf_dta
+hr_perf_dta <- 
+  hr_perf_dta |> 
+  clean_names()
+```
+
+
+
+::: {.callout-tip}
+## Recode data entries
+
+- Create a new variable `cat_education` wherein `education` is `1` = `No formal education`; `2` = `High school`; `3` = `Bachelor`; `4` = `Masters`; `5` = `Doctorate`. Use the `case_when` function to accomplish this task. 
+
+- Similarly, create new variables `cat_envi_sat`, `cat_job_sat`, and `cat_relation_sat` for `environment_satisfaction`, `job_satisfaction`, and `relationship_satisfaction`, respectively. Re-code the values accordingly as `1` = `Very dissatisfied`; `2` = `Dissatisfied`; `3` = `Neutral`; `4` = `Satisfied`; and `5` = `Very satisfied`.
+
+- Create new variables  `cat_work_life_balance`, `cat_self_rating`, `cat_manager_rating` for `work_life_balance`, `self_rating`, and `manager_rating`, respectively. Re-code accordingly as `1` = `Unacceptable`; `2` = `Needs improvement`; `3` = `Meets expectation`; `4` = `Exceeds expectation`; and `5` = `Above and beyond`.
+
+- Save all the changes in the `hr_perf_dta`.
+:::
+
+
+```{r}
+## create cat_education
+
+
+## create cat_envi_sat,  cat_job_sat, and cat_relation_sat
+
+
+## create cat_work_life_balance, cat_self_rating, and cat_manager_rating
+
+
+## print the updated hr_perf_dta using datatable function
+```
+
+
+## Exploratory data analysis
+
+### Descriptive statistics of employee attrition
+
+::: {.callout-tip}
+## Task 5.1.1.Breakdown of attrition by key variables
+
+- Select the variables `attrition`, `job_role`, `department`, `age`, `salary`, `job_satisfaction`, and `work_life_balance.` Save as `attrition_key_var_dta`.
+
+- Compute and plot the attrition rate across `job_role`, `department`, and `age`, `salary`, `job_satisfaction`, and `work_life_balance`. 
+
+- Attrition rate across `job_role` has been done for you! You have the freedom to customize your plot accordingly. Show your creativity!
+
+:::
+
+
+```{r}
+## selecting attrition key variables and save as `attrition_key_var_dta`
+
+
+## display the attrition_key_var_dta using datatable function.
+```
+
+
+```{r}
+#| fig-height: 7
+
+## calculating and plotting attrition rate across job roles
+hr_perf_dta |> # replace this data with the attrition_key_var_dta
+  group_by(job_role) |> 
+  count(attrition) |> 
+  mutate(pct_attrition = n / sum(n)) |> 
+  ungroup() |> 
+  mutate(job_role = reorder_within(job_role, pct_attrition, attrition)) |> 
+  ggplot(aes(pct_attrition, job_role, fill = attrition)) +
+  geom_col(position = "dodge", width = 0.8) +
+  scale_y_reordered() +
+  facet_wrap(~ attrition, scales = "free_y", ncol = 1) +
+  labs(x = "Attrition rate",
+       y = "Job role")
+  
+```
+
+
+
+
+### Identifying attrition key drivers using correlation analysis
+
+
+### Predictive modeling for attrition
+
+
+### Employee satisfaction and performance analysis
+
+
+### Analysis of compensation and turnover
+
+
+### Work-life balance and retention strategies
+
+
+### Recommendations for HR interventions
+
+

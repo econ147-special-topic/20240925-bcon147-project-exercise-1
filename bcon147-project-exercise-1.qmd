@@ -95,7 +95,8 @@ perf_rating_dta <- read_csv("dataset/PerformanceRating.csv")
 ## merge employee_dta and perf_rating_dta
 hr_perf_dta <- 
   employee_dta |> 
-  left_join(perf_rating_dta, by = "EmployeeID")
+  left_join(perf_rating_dta, by = "EmployeeID") |> 
+  mutate(bi_attrition = if_else(Attrition == "No", 0, 1))
 
 
 ## Use the datatable from DT package to display the merged dataset
@@ -135,6 +136,8 @@ hr_perf_dta <-
 - Similarly, create new variables `cat_envi_sat`, `cat_job_sat`, and `cat_relation_sat` for `environment_satisfaction`, `job_satisfaction`, and `relationship_satisfaction`, respectively. Re-code the values accordingly as `1` = `Very dissatisfied`; `2` = `Dissatisfied`; `3` = `Neutral`; `4` = `Satisfied`; and `5` = `Very satisfied`.
 
 - Create new variables  `cat_work_life_balance`, `cat_self_rating`, `cat_manager_rating` for `work_life_balance`, `self_rating`, and `manager_rating`, respectively. Re-code accordingly as `1` = `Unacceptable`; `2` = `Needs improvement`; `3` = `Meets expectation`; `4` = `Exceeds expectation`; and `5` = `Above and beyond`.
+
+- Create a new variable `bi_attrition` by transforming `attrition` variable as a numeric variabe. Re-code  accordingly as `No` = `0`, and `Yes` = `1`.
 
 - Save all the changes in the `hr_perf_dta`.
 :::
@@ -201,6 +204,49 @@ hr_perf_dta |> # replace this data with the attrition_key_var_dta
 
 
 ### Identifying attrition key drivers using correlation analysis
+
+::: {.callout-tip}
+## Task 5.2.1. Conduct a correlation analysis to identify key drivers
+
+- Conduct a correlation analysis of key variables: `bi_attrition`, `salary`, `years_at_company`, `job_satisfaction`, `manager_rating`, and `work_life_balance`. Use the `cor()` function to run the correlation analysis. Remove missing values using the `na.omit()` before running the correlation analysis. Save the output in `hr_corr`.
+
+- Use a correlation matrix or heatmap to visualize the relationship between these variables and attrition.
+
+- Discuss which factors seem most correlated with attrition and what that suggests aobut why employees are leaving.
+
+:::
+
+```{r}
+## conduct correlation of key variables. 
+hr_corr <- 
+  hr_perf_dta |> 
+  select(bi_attrition, salary, years_at_company, job_satisfaction, manager_rating, work_life_balance) |> 
+  na.omit() |> 
+  cor()
+
+## print hr_corr 
+
+
+```
+
+
+```{r}
+## install the corrplot package and use the corrplot 
+```
+
+
+```{r}
+corrplot::corrplot(
+  cor(hr_perf_dta |> 
+      select(bi_attrition, salary, years_at_company, job_satisfaction, manager_rating, work_life_balance) |> 
+      na.omit(),
+      method = "pearson"),
+  method = "number",
+  type = "upper"
+)
+```
+
+
 
 
 ### Predictive modeling for attrition

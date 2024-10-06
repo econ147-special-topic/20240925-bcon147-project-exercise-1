@@ -11,7 +11,7 @@ format:
     fontsize: 1em
     linestretch: 1.5
     toc: true
-    toc-location: left
+    toc-location: right
     number-sections: true
     code-fold: false
     theme:
@@ -21,6 +21,7 @@ execute:
   message: false
   warning: false
   fig-align: center
+  fig-height: 6
 editor: visual
 ---
 
@@ -29,11 +30,7 @@ editor: visual
 #| include: false
 #| echo: false
 
-# load your libraries here
-library(tidyverse)
-library(readxl)
-library(janitor)
-library(tidytext)
+
 
 # additional options
 ## increase max print
@@ -41,9 +38,13 @@ getOption("max.print")
 
 ```
 
+
+
 ## Project overiew
 
 In this project, we will explore employee attrition and performance using the HR Analytics Employee Attrition & Performance dataset. The primary goal is to develop insights into the factors that contribute to employee attrition. By analyzing a range of factors, including demographic data, job satisfaction, work-life balance, and job role, we aim to help businesses identify key areas where they can improve employee retention.
+
+
 
 ## Scenario
 
@@ -51,7 +52,9 @@ Imagine you are working as a data analyst for a mid-sized company that is experi
 
 Your task is to analyze the dataset and provide insights that will help HR prioritize retention strategies. These strategies could include interventions like revising compensation policies, improving job satisfaction, or focusing on work-life balance initiatives. The success of your analysis could lead to significant cost savings for the company and an increase in employee engagement and performance.
 
-## Understanding the source of data
+
+
+## Understanding data source
 
 The dataset used for this project provides information about employee demographics, performance metrics, and various satisfaction ratings. The dataset is particularly useful for exploring how factors such as job satisfaction, work-life balance, and training opportunities influence employee performance and attrition.
 
@@ -62,11 +65,35 @@ This dataset is well-suited for conducting in-depth analysis of employee perform
 
 ## datatable function from DT package create an HTML widget display of the dataset
 ## install DT package if the package is not yet available in your R environment
-read_excel("dataset/dataset-variable-description.xlsx") |> 
+readxl::read_excel("dataset/dataset-variable-description.xlsx") |> 
   DT::datatable()
 ```
 
-## Data wrangling
+
+## Data wrangling and management
+
+### Libraries {.unnumbered .unlisted}
+
+::: callout-tip
+
+## Task: Load the necessary libraries
+
+Before we start working on the dataset, we need to load the necessary libraries that will be used for data wrangling, analysis and visualization. Make sure to load the following libraries here. For packages to be installed, you can use the `install.packages` function. There are packages to be installed later on this project, so make sure to install them as needed and load them here.
+
+:::
+
+
+```{r}
+#| label: libraries
+# load all your libraries here
+library(tidyverse)
+library(readxl)
+library(janitor)
+library(tidytext)
+
+```
+
+
 
 ### Data importation
 
@@ -77,16 +104,17 @@ read_excel("dataset/dataset-variable-description.xlsx") |>
 
 -   Merge the two dataset using the `left_join` function from `dplyr`. Use the `EmployeeID` variable as the varible to join by. You may read more information about the `left_join` function [here](https://dplyr.tidyverse.org/reference/mutate-joins.html).
 
--   Save the merged dataset as `hr_perf_dta`.
+-   Save the merged dataset as `hr_perf_dta` and display the dataset using the `datatable` function from `DT` package.
 :::
 
 ```{r}
 
-## import the two dataset
+## import the two data here
 employee_dta <- read_csv("dataset/Employee.csv")
 perf_rating_dta <- read_csv("dataset/PerformanceRating.csv")
 
-## merge employee_dta and perf_rating_dta
+## merge employee_dta and perf_rating_dta using left_join function.
+## save the merged dataset as hr_perf_dta
 hr_perf_dta <- 
   employee_dta |> 
   left_join(perf_rating_dta, by = "EmployeeID") |> 
@@ -114,10 +142,14 @@ DT::datatable(hr_perf_dta)
 hr_perf_dta <- 
   hr_perf_dta |> 
   clean_names()
+
+## display the renamed hr_perf_dta using datatable function
+DT::datatable(hr_perf_dta)
+
 ```
 
 ::: callout-tip
-## Recode data entries
+## Task 4.2. Recode data entries
 
 -   Create a new variable `cat_education` wherein `education` is `1` = `No formal education`; `2` = `High school`; `3` = `Bachelor`; `4` = `Masters`; `5` = `Doctorate`. Use the `case_when` function to accomplish this task.
 
@@ -127,20 +159,87 @@ hr_perf_dta <-
 
 -   Create a new variable `bi_attrition` by transforming `attrition` variable as a numeric variabe. Re-code accordingly as `No` = `0`, and `Yes` = `1`.
 
--   Save all the changes in the `hr_perf_dta`.
+-   Save all the changes in the `hr_perf_dta`. Note that saving the changes with the same name will update the dataset with the new variables created.
 :::
 
 ```{r}
 ## create cat_education
 
+hr_perf_dta <- 
+  hr_perf_dta |> 
+  mutate(cat_education = case_when(
+    education == 1 ~ "No formal education",
+    education == 2 ~ "High school",
+    education == 3 ~ "Bachelor",
+    education == 4 ~ "Masters",
+    education == 5 ~ "Doctorate"
+  ))
+
 
 ## create cat_envi_sat,  cat_job_sat, and cat_relation_sat
+hr_perf_dta <- 
+  hr_perf_dta |> 
+  mutate(cat_envi_sat = case_when(
+    environment_satisfaction == 1 ~ "Very dissatisfied",
+    environment_satisfaction == 2 ~ "Dissatisfied",
+    environment_satisfaction == 3 ~ "Neutral",
+    environment_satisfaction == 4 ~ "Satisfied",
+    environment_satisfaction == 5 ~ "Very satisfied"
+  )) |> 
+  mutate(cat_job_sat = case_when(
+    job_satisfaction == 1 ~ "Very dissatisfied",
+    job_satisfaction == 2 ~ "Dissatisfied",
+    job_satisfaction == 3 ~ "Neutral",
+    job_satisfaction == 4 ~ "Satisfied",
+    job_satisfaction == 5 ~ "Very satisfied"
+  )) |> 
+  mutate(cat_relation_sat = case_when(
+    relationship_satisfaction == 1 ~ "Very dissatisfied",
+    relationship_satisfaction == 2 ~ "Dissatisfied",
+    relationship_satisfaction == 3 ~ "Neutral",
+    relationship_satisfaction == 4 ~ "Satisfied",
+    relationship_satisfaction == 5 ~ "Very satisfied"
+  ))
 
 
 ## create cat_work_life_balance, cat_self_rating, and cat_manager_rating
 
+hr_perf_dta <- 
+  hr_perf_dta |> 
+  mutate(cat_work_life_balance = case_when(
+    work_life_balance == 1 ~ "Unacceptable",
+    work_life_balance == 2 ~ "Needs improvement",
+    work_life_balance == 3 ~ "Meets expectation",
+    work_life_balance == 4 ~ "Exceeds expectation",
+    work_life_balance == 5 ~ "Above and beyond"
+  )) |> 
+  mutate(cat_self_rating = case_when(
+    self_rating == 1 ~ "Unacceptable",
+    self_rating == 2 ~ "Needs improvement",
+    self_rating == 3 ~ "Meets expectation",
+    self_rating == 4 ~ "Exceeds expectation",
+    self_rating == 5 ~ "Above and beyond"
+  )) |> 
+  mutate(cat_manager_rating = case_when(
+    manager_rating == 1 ~ "Unacceptable",
+    manager_rating == 2 ~ "Needs improvement",
+    manager_rating == 3 ~ "Meets expectation",
+    manager_rating == 4 ~ "Exceeds expectation",
+    manager_rating == 5 ~ "Above and beyond"
+  ))
+
+
+## create bi_attrition
+
+hr_perf_dta <- 
+  hr_perf_dta |> 
+  mutate(bi_attrition = if_else(attrition == "No", 0, 1))
+
+
 
 ## print the updated hr_perf_dta using datatable function
+DT::datatable(hr_perf_dta)
+
 ```
 
 ## Exploratory data analysis
@@ -148,31 +247,46 @@ hr_perf_dta <-
 ### Descriptive statistics of employee attrition
 
 ::: callout-tip
-## Task 5.1.1.Breakdown of attrition by key variables
+## Task 5.1.Breakdown of attrition by key variables
 
 -   Select the variables `attrition`, `job_role`, `department`, `age`, `salary`, `job_satisfaction`, and `work_life_balance.` Save as `attrition_key_var_dta`.
 
--   Compute and plot the attrition rate across `job_role`, `department`, and `age`, `salary`, `job_satisfaction`, and `work_life_balance`.
+-   Compute and plot the attrition rate across `job_role`, `department`, and `age`, `salary`, `job_satisfaction`, and `work_life_balance`. To compute for the attrition rate, group the dataset by job role. Afterward, you can use the `count` function to get the frequency of attrition for each job role and then divide it by the total number of observations. Save the computation as `pct_attrition`. Do not forget to ungroup before storing the output. Store the output as `attrition_rate_job_role`.
 
--   Attrition rate across `job_role` has been done for you! You have the freedom to customize your plot accordingly. Show your creativity!
+-   Plot for the attrition rate across `job_role` has been done for you! Study each line of code. You have the freedom to customize your plot accordingly. Show your creativity!
 :::
 
 ```{r}
 ## selecting attrition key variables and save as `attrition_key_var_dta`
+attrition_key_var_dta <- 
+  hr_perf_dta |> 
+  select(attrition, 
+         job_role,
+         department, 
+         age, 
+         salary, 
+         job_satisfaction, 
+         work_life_balance
+         )
 
 
-## display the attrition_key_var_dta using datatable function.
-```
+## compute the attrition rate across job_role and save as attrition_rate_job_role
 
-```{r}
-#| fig-height: 7
-
-## calculating and plotting attrition rate across job roles
-hr_perf_dta |> # replace this data with the attrition_key_var_dta
+attrition_rate_job_role <-
+  attrition_key_var_dta |> 
   group_by(job_role) |> 
   count(attrition) |> 
   mutate(pct_attrition = n / sum(n)) |> 
-  ungroup() |> 
+  ungroup()
+  
+## print attrition_rate_job_role
+attrition_rate_job_role
+
+```
+
+```{r}
+## Plot the attrition rate
+attrition_rate_job_role |> 
   mutate(job_role = reorder_within(job_role, pct_attrition, attrition)) |> 
   ggplot(aes(pct_attrition, job_role, fill = attrition)) +
   geom_col(position = "dodge", width = 0.8) +
@@ -180,8 +294,10 @@ hr_perf_dta |> # replace this data with the attrition_key_var_dta
   facet_wrap(~ attrition, scales = "free_y", ncol = 1) +
   labs(x = "Attrition rate",
        y = "Job role")
-  
+
+
 ```
+
 
 ### Identifying attrition key drivers using correlation analysis
 
@@ -210,9 +326,21 @@ hr_corr
 
 ```{r}
 ## install GGally package and use ggcorr function to visualize the correlation
+library(GGally)
 
-
+ggcorr(hr_corr, label = TRUE)
 ```
+
+
+::: callout-note
+## Discussion:
+
+Provide your discussion here.
+
+
+:::
+
+
 
 
 ### Predictive modeling for attrition
